@@ -54,20 +54,19 @@ def index():
 # ---------------------------
 # Submit Form → Insert into DB
 # ---------------------------
+
 @app.route("/submit", methods=["POST"])
 def submit():
 
-    # 1. Basic fields
-    person = request.form["person_name"]
-    from_date = request.form["from_date"]
-    to_date = request.form["to_date"]
-    days = request.form["days"]
-    country = request.form["country"]
-    port = request.form["port"]
-    vessel = request.form["vessel"]
-    purpose = request.form["purpose"]
+    person = request.form.get("person_name")
+    from_date = request.form.get("from_date")
+    to_date = request.form.get("to_date")
+    days = request.form.get("days")
+    country = request.form.get("country")
+    port = request.form.get("port")
+    vessel = request.form.get("vessel")
+    purpose = request.form.get("purpose")
 
-    # 2. Transport data (multiple rows)
     modes = request.form.getlist("transport_mode[]")
     costs = request.form.getlist("transport_cost[]")
 
@@ -76,7 +75,6 @@ def submit():
     conn = sqlite3.connect("travel.db")
     cursor = conn.cursor()
 
-    # Insert main table
     cursor.execute("""
         INSERT INTO travel_details 
         (person_name, from_date, to_date, days, country, port, vessel, purpose, total_cost)
@@ -85,7 +83,6 @@ def submit():
 
     travel_id = cursor.lastrowid
 
-    # Insert transport list
     for mode, cost in zip(modes, costs):
         cursor.execute("""
             INSERT INTO transport_details (travel_id, mode, cost)
@@ -96,6 +93,7 @@ def submit():
     conn.close()
 
     return redirect("/records")
+
 
 
 # ---------------------------
@@ -113,9 +111,10 @@ def records():
     records = []
 
     for row in rows:
-        id = row[0]
-
-        cursor.execute("SELECT mode, cost FROM transport_details WHERE travel_id=?", (id,))
+        cursor.execute(
+            "SELECT mode, cost FROM transport_details WHERE travel_id=?",
+            (row[0],)
+        )
         transport = cursor.fetchall()
 
         records.append({
@@ -123,17 +122,19 @@ def records():
             "person_name": row[1],
             "from_date": row[2],
             "to_date": row[3],
-            "days": row[7],
-            "country": row[8],
-            "port": row[9],
-            "vessel": row[5],
-            "purpose": row[6],
-            "place": row[4],  # not shown in table but preserved
-            "total_cost": row[10],
+            "days": row[4],
+            "country": row[5],
+            "port": row[6],
+            "vessel": row[7],
+            "purpose": row[8],
+            "total_cost": row[9],
             "transport": transport
         })
 
     conn.close()
+
+    return render_template("table.html", records=records)
+
 
     return render_template("table.html", records=records)
 
