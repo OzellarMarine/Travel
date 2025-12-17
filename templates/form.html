@@ -10,6 +10,7 @@
             padding: 0;
         }
 
+        /* FULL-WIDTH HEADER */
         .header {
             width: 100%;
             background-color: #d3d3d3;
@@ -30,6 +31,7 @@
             font-weight: bold;
         }
 
+        /* FORM CONTAINER */
         .container {
             width: 90%;
             max-width: 600px;
@@ -81,144 +83,321 @@
     </style>
 
 <script>
-function validateDates() {
-    const fromDate = document.querySelector('input[name="from_date"]').value;
-    const toDate = document.querySelector('input[name="to_date"]').value;
+    /* ------------------- Date Validation ------------------- */
+    function validateDates() {
+        const fromDate = document.querySelector('input[name="from_date"]').value;
+        const toDate = document.querySelector('input[name="to_date"]').value;
 
-    if (toDate <= fromDate) {
-        alert("To Date must be greater than From Date.");
-        return false;
+        if (toDate <= fromDate) {
+            alert("To Date must be greater than From Date.");
+            return false;
+        }
+        return true;
     }
-    return true;
-}
 
-const portsByCountry = {
-    "India": [
-        "Mumbai", "JNPT / Nhava Sheva", "Chennai", "Kolkata / Haldia",
-        "Visakhapatnam", "Kandla", "Mangalore", "Tuticorin",
-        "Paradip", "Cochin", "Hazira", "Mundra"
-    ],
-    "Singapore": [
-        "Singapore", "Port Klang", "Tanjung Pelepas",
-        "Hong Kong", "Shanghai", "Ningbo",
-        "Qingdao", "Busan", "Yokohama", "Tokyo"
-    ],
-    "China": [
+    /* ------------------- Country → Port Dropdown ------------------- */
+    const portsByCountry = {
+        "India": [
+            "Mumbai", "JNPT / Nhava Sheva", "Chennai", "Kolkata / Haldia",
+            "Visakhapatnam", "Kandla", "Mangalore", "Tuticorin",
+            "Paradip", "Cochin", "Hazira", "Mundra"
+        ],
+        "Singapore": [
+            "Singapore", "Port Klang", "Tanjung Pelepas",
+            "Hong Kong", "Shanghai", "Ningbo",
+            "Qingdao", "Busan", "Yokohama", "Tokyo"
+        ],
+         "China": [
         "Shanghai", "Ningbo-Zhoushan", "Shenzhen", "Guangzhou",
         "Qingdao", "Tianjin", "Xiamen", "Dalian", "Hong Kong"
     ],
+
     "Japan": [
         "Tokyo", "Yokohama", "Nagoya", "Osaka", "Kobe"
     ],
+
     "South Korea": [
         "Busan", "Incheon", "Gwangyang"
     ],
+
     "Malaysia": [
         "Port Klang", "Tanjung Pelepas", "Penang"
     ],
+
     "Indonesia": [
         "Tanjung Priok", "Surabaya", "Belawan", "Makassar"
     ],
+
     "Sri Lanka": [
         "Colombo", "Hambantota"
     ],
+
     "UAE": [
         "Jebel Ali", "Port Rashid", "Khalifa Port", "Fujairah"
     ],
+
     "Saudi Arabia": [
         "Jeddah Islamic Port", "Dammam", "Yanbu", "Ras Tanura"
     ],
+
     "Oman": [
         "Salalah", "Sohar", "Duqm"
     ],
+
     "Egypt": [
         "Port Said", "Alexandria", "Damietta", "Suez"
     ],
+
     "South Africa": [
         "Durban", "Cape Town", "Richards Bay"
     ],
+
     "Netherlands": [
         "Rotterdam", "Amsterdam"
     ],
+
     "Belgium": [
         "Antwerp", "Zeebrugge"
     ],
+
     "Germany": [
         "Hamburg", "Bremerhaven"
     ],
+
     "United Kingdom": [
         "Felixstowe", "London Gateway", "Southampton", "Liverpool"
     ],
+
     "Spain": [
         "Algeciras", "Valencia", "Barcelona"
     ],
+
     "France": [
         "Marseille", "Le Havre"
     ],
+
     "Italy": [
         "Genoa", "Trieste", "Venice"
     ],
+
     "Greece": [
         "Piraeus", "Thessaloniki"
     ],
+
     "Turkey": [
         "Istanbul", "Izmir", "Mersin"
     ],
+
     "United States": [
         "Los Angeles", "Long Beach", "New York / New Jersey",
         "Savannah", "Houston", "Oakland", "Seattle"
     ],
+
     "Canada": [
         "Vancouver", "Prince Rupert", "Montreal", "Halifax"
     ],
+
     "Brazil": [
         "Santos", "Rio de Janeiro", "Paranagua"
     ],
+
     "Argentina": [
         "Buenos Aires", "Rosario"
     ],
+
     "Australia": [
         "Sydney", "Melbourne", "Brisbane",
         "Fremantle", "Port Hedland", "Dampier"
     ],
+
     "New Zealand": [
         "Auckland", "Tauranga", "Wellington"
     ]
-};
+    };
 
-function updatePorts() {
-    const country = document.getElementById("country").value;
-    const portDropdown = document.getElementById("port");
+    function updatePorts() {
+        const country = document.getElementById("country").value;
+        const portDropdown = document.getElementById("port");
 
-    portDropdown.innerHTML = "<option value=''>-- Select Port --</option>";
+        portDropdown.innerHTML = "<option value=''>-- Select Port --</option>";
 
-    if (country in portsByCountry) {
-        portsByCountry[country].forEach(port => {
-            const option = document.createElement("option");
-            option.value = port;
-            option.textContent = port;
-            portDropdown.appendChild(option);
+        if (country in portsByCountry) {
+            portsByCountry[country].forEach(port => {
+                const option = document.createElement("option");
+                option.value = port;
+                option.textContent = port;
+                portDropdown.appendChild(option);
+            });
+        }
+    }
+
+    /* ------------------- Auto Calculate Days ------------------- */
+    function calculateDays() {
+        const fromDate = document.querySelector('input[name="from_date"]').value;
+        const toDate = document.querySelector('input[name="to_date"]').value;
+        const daysField = document.getElementById("days");
+
+        if (fromDate && toDate) {
+            const start = new Date(fromDate);
+            const end = new Date(toDate);
+
+            if (end >= start) {
+                const diff = (end - start) / (1000 * 60 * 60 * 24);
+                daysField.value = diff + 1; 
+            } else {
+                daysField.value = "";
+            }
+        }
+    }
+
+    /* ------------------- Add Multiple Transport + Cost ------------------- */
+
+    function addTransportRow() {
+        const section = document.getElementById("transport-section");
+
+        const div = document.createElement("div");
+        div.classList.add("transport-row");
+
+        div.innerHTML = `
+            <label>Mode of Transport</label>
+            <select name="transport_mode[]" class="transport-mode">
+                <option value="">-- Select Mode --</option>
+                <option>Flight</option>
+                <option>Train</option>
+                <option>Car</option>
+                <option>Bus</option>
+                <option>Taxi</option>
+            </select>
+
+            <label>Cost (₹)</label>
+            <input type="number" name="transport_cost[]" class="transport-cost" placeholder="Enter amount" required>
+        `;
+
+        section.appendChild(div);
+
+        attachCostListeners();
+    }
+
+    function calculateTotalCost() {
+        let total = 0;
+        document.querySelectorAll(".transport-cost").forEach(input => {
+            if (input.value) total += parseFloat(input.value);
+        });
+        document.getElementById("total-cost").innerText = total;
+    }
+
+    function attachCostListeners() {
+        document.querySelectorAll(".transport-cost").forEach(input => {
+            input.addEventListener("input", calculateTotalCost);
         });
     }
-}
+
+    attachCostListeners();
 </script>
 
 </head>
 
 <body>
 
-<div class="header">
-    <img src="logo.png" alt="Logo">
-    <div class="header-title">Travel Entry Form</div>
-</div>
+    <div class="header">
+        <img src="logo.png" alt="Logo">
+        <div class="header-title">Travel Entry Form</div>
+    </div>
 
-<div class="container">
+    <div class="container">
 
 <form method="POST" action="/submit" onsubmit="return validateDates();">
-<!-- FORM CONTENT UNCHANGED -->
+
+    <label>Person Name</label>
+    <input type="text" name="person_name" required>
+
+    <label>From Date</label>
+    <input type="date" name="from_date" required onchange="calculateDays()">
+
+    <label>To Date</label>
+    <input type="date" name="to_date" required onchange="calculateDays()">
+
+    <label>Number of Days</label>
+    <input type="text" id="days" name="days" readonly style="background:#f5f5f5;">
+
+    <label>Country</label>
+    <select name="country" id="country" onchange="updatePorts()" required>
+        <option value="">-- Select Country --</option>
+        <option>India</option>
+        <option>Singapore</option>
+    </select>
+
+    <label>Port</label>
+    <select name="port" id="port" required>
+        <option value="">-- Select Port --</option>
+    </select>
+
+    <label>Vessel Name</label>
+    <select name="vessel" required>
+        <option value="">-- Select Vessel --</option>
+        <option>GCL Ganga</option>
+        <option>GCL Yamuna</option>
+        <option>GCL Tapi</option>
+        <option>GCL Sabarmati</option>
+        <option>GCL Narmada</option>
+        <option>AM Kirti</option>
+        <option>AM Tarang</option>
+        <option>AM Umang</option>
+    </select>
+
+    <hr><br>
+
+    <!-- ----------------- MULTI-TRANSPORT SECTION ----------------- -->
+
+    <h3>Travel Cost Details</h3>
+
+    <div id="transport-section">
+        <!-- Default Row -->
+        <div class="transport-row">
+            <label>Mode of Transport</label>
+            <select name="transport_mode[]" class="transport-mode">
+                <option value="">-- Select Mode --</option>
+                <option>Flight</option>
+                <option>Train</option>
+                <option>Car</option>
+                <option>Bus</option>
+                <option>Taxi</option>
+            </select>
+
+            <label>Cost (₹)</label>
+            <input type="number" name="transport_cost[]" class="transport-cost" placeholder="Enter amount" required>
+        </div>
+    </div>
+
+    <button type="button" class="add-btn" onclick="addTransportRow()">+ Add More Transport</button>
+
+    <h3>Total Transport Cost: ₹ <span id="total-cost">0</span></h3>
+
+    <hr><br>
+
+    <label>Purpose of Travel</label>
+    <input type="text" name="purpose" required>
+
+    <button type="submit">Submit</button>
+
+    <a href="/records" 
+       style="
+           display:block;
+           margin-top:20px;
+           padding:12px;
+           background-color:#28a745;
+           color:white;
+           text-align:center;
+           text-decoration:none;
+           border-radius:5px;
+       ">
+        View Previous Data
+    </a>
+
 </form>
 
 </div>
 
 </body>
 </html>
+
