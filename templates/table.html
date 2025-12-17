@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Travel Records</title>
+
+    <style>
+        body { 
+            font-family: Arial; 
+            background: #f5f5f5; 
+            padding: 20px; 
+        }
+
+        h2 { 
+            text-align: center; 
+            margin-bottom: 20px; 
+        }
+
+        /* Top bar container */
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        /* Export button */
+        .export-btn {
+            background: #28a745;
+            color: white;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .export-btn:hover {
+            background: #1e7e34;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .small-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .small-table th {
+            background: #28a745;
+            color: white;
+        }
+
+        .small-table td {
+            border: 1px solid #ccc;
+            padding: 6px;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            padding: 6px 12px;
+            text-decoration: none;
+            color: black;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            padding: 6px 12px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .btn-delete:hover {
+            background: #b52a37;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Travel Records</h2>
+
+<!-- ========== EXPORT BUTTON (Top Right) ========== -->
+<div class="top-bar">
+    <a href="/export" class="export-btn">Export to Excel</a>
+</div>
+
+<table>
+    <tr>
+        <th>Person Name</th>
+        <th>From Date</th>
+        <th>To Date</th>
+        <th>Number of Days</th>
+        <th>Country</th>
+        <th>Port</th>
+        <th>Vessel Name</th>
+        <th>Travel Details (Mode / Cost)</th>
+        <th>Total Cost (₹)</th>
+        <th>Purpose of Travel</th>
+        <th>Action</th>
+    </tr>
+
+    {% for row in records %}
+    <tr>
+        <td>{{ row.person_name }}</td>
+        <td>{{ row.from_date }}</td>
+        <td>{{ row.to_date }}</td>
+        <td>{{ row.days }}</td>
+        <td>{{ row.country }}</td>
+        <td>{{ row.port }}</td>
+        <td>{{ row.vessel }}</td>
+
+        <td>
+            <table class="small-table">
+                <tr>
+                    <th>Mode</th>
+                    <th>Cost (₹)</th>
+                </tr>
+                {% for mode, cost in row.transport %}
+                <tr>
+                    <td>{{ mode }}</td>
+                    <td>{{ cost }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </td>
+
+        <td><b>{{ row.total_cost }}</b></td>
+
+        <td>{{ row.purpose }}</td>
+
+        <td>
+            <a href="/edit/{{ row.id }}" class="btn-edit">Edit</a>
+            <a href="/delete/{{ row.id }}" class="btn-delete" onclick="return confirm('Are you sure to delete?');">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

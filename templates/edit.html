@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Travel Entry</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            width: 100%;
+            background-color: #d3d3d3;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .add-btn {
+            background-color: #6c757d;
+        }
+
+        .transport-row {
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 15px;
+            background: #f8f8f8;
+        }
+
+        a.cancel-btn {
+            display: block;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+
+    <script>
+        const portsByCountry = {
+            "India": [
+                "Mumbai", "JNPT / Nhava Sheva", "Chennai", "Kolkata / Haldia",
+                "Visakhapatnam", "Kandla", "Mangalore", "Tuticorin",
+                "Paradip", "Cochin", "Hazira", "Mundra"
+            ],
+            "Singapore": [
+                "Singapore", "Port Klang", "Tanjung Pelepas",
+                "Hong Kong", "Shanghai", "Ningbo",
+                "Qingdao", "Busan", "Yokohama", "Tokyo"
+            ]
+        };
+
+        /* Populate ports on load */
+        function loadPorts() {
+            const selectedCountry = "{{ record.country }}";
+            const selectedPort = "{{ record.port }}";
+
+            const portDropdown = document.getElementById("port");
+
+            portsByCountry[selectedCountry].forEach(port => {
+                const option = document.createElement("option");
+                option.value = port;
+                option.textContent = port;
+                if (port === selectedPort) option.selected = true;
+                portDropdown.appendChild(option);
+            });
+        }
+
+        function updatePorts() {
+            const country = document.getElementById("country").value;
+            const portDropdown = document.getElementById("port");
+
+            portDropdown.innerHTML = "<option value=''>-- Select Port --</option>";
+
+            if (country in portsByCountry) {
+                portsByCountry[country].forEach(port => {
+                    const option = document.createElement("option");
+                    option.value = port;
+                    option.textContent = port;
+                    portDropdown.appendChild(option);
+                });
+            }
+        }
+
+        function calculateDays() {
+            const start = new Date(document.querySelector('input[name="from_date"]').value);
+            const end = new Date(document.querySelector('input[name="to_date"]').value);
+            const daysField = document.getElementById("days");
+
+            if (end >= start) {
+                const diff = (end - start) / (1000 * 60 * 60 * 24);
+                daysField.value = diff + 1;
+            } else {
+                daysField.value = "";
+            }
+        }
+
+        function addTransportRow(mode="", cost="") {
+            const section = document.getElementById("transport-section");
+
+            const div = document.createElement("div");
+            div.classList.add("transport-row");
+
+            div.innerHTML = `
+                <label>Mode of Transport</label>
+                <select name="transport_mode[]" class="transport-mode">
+                    <option value="">-- Select Mode --</option>
+                    <option ${mode=="Flight"?"selected":""}>Flight</option>
+                    <option ${mode=="Train"?"selected":""}>Train</option>
+                    <option ${mode=="Car"?"selected":""}>Car</option>
+                    <option ${mode=="Bus"?"selected":""}>Bus</option>
+                    <option ${mode=="Taxi"?"selected":""}>Taxi</option>
+                </select>
+
+                <label>Cost (₹)</label>
+                <input type="number" name="transport_cost[]" class="transport-cost" value="${cost}" required>
+            `;
+
+            section.appendChild(div);
+            attachCostListeners();
+        }
+
+        function calculateTotalCost() {
+            let total = 0;
+            document.querySelectorAll(".transport-cost").forEach(input => {
+                if (input.value) total += parseFloat(input.value);
+            });
+            document.getElementById("total-cost").innerText = total;
+        }
+
+        function attachCostListeners() {
+            document.querySelectorAll(".transport-cost").forEach(input => {
+                input.addEventListener("input", calculateTotalCost);
+            });
+        }
+
+        /* Load transport rows on page load */
+        window.onload = function() {
+            loadPorts();
+
+            const transportData = {{ record.transport|tojson }};
+            const totalCost = {{ record.total_cost }};
+
+            transportData.forEach(item => {
+                addTransportRow(item[0], item[1]);
+            });
+
+            document.getElementById("total-cost").innerText = totalCost;
+
+            attachCostListeners();
+        };
+    </script>
+
+</head>
+
+<body>
+
+<div class="header">
+    <div class="header-title">Edit Travel Entry</div>
+</div>
+
+<div class="container">
+
+<form method="POST" action="/update/{{ record.id }}">
+
+    <label>Person Name</label>
+    <input type="text" name="person_name" value="{{ record.person_name }}" required>
+
+    <label>From Date</label>
+    <input type="date" name="from_date" value="{{ record.from_date }}" onchange="calculateDays()" required>
+
+    <label>To Date</label>
+    <input type="date" name="to_date" value="{{ record.to_date }}" onchange="calculateDays()" required>
+
+    <label>Number of Days</label>
+    <input type="text" id="days" name="days" value="{{ record.days }}" readonly>
+
+    <label>Country</label>
+    <select id="country" name="country" onchange="updatePorts()" required>
+        <option value="India" {% if record.country == "India" %}selected{% endif %}>India</option>
+        <option value="Singapore" {% if record.country == "Singapore" %}selected{% endif %}>Singapore</option>
+    </select>
+
+    <label>Port</label>
+    <select id="port" name="port" required>
+        <option value="">-- Select Port --</option>
+    </select>
+
+    <label>Vessel Name</label>
+    <select name="vessel" required>
+        <option>GCL Ganga</option>
+        <option>GCL Yamuna</option>
+        <option>GCL Tapi</option>
+        <option>GCL Sabarmati</option>
+        <option>GCL Narmada</option>
+        <option>AM Kirti</option>
+        <option>AM Tarang</option>
+        <option>AM Umang</option>
+    </select>
+
+    <br><hr><br>
+
+    <h3>Transport Details</h3>
+
+    <div id="transport-section"></div>
+
+    <button type="button" class="add-btn" onclick="addTransportRow()">+ Add More Transport</button>
+
+    <h3>Total Transport Cost: ₹ <span id="total-cost">0</span></h3>
+
+    <label>Purpose of Travel</label>
+    <input type="text" name="purpose" value="{{ record.purpose }}" required>
+
+    <button type="submit">Update Entry</button>
+
+    <a href="/records" class="cancel-btn">Back to Records</a>
+
+</form>
+
+</div>
+
+</body>
+</html>
