@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: travel-app
+    runtime: python
+    buildCommand: ""
+    startCommand: "gunicorn appp:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
